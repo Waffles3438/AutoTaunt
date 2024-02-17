@@ -1,12 +1,12 @@
-package org.polyfrost.example.hud;
+package AutoTaunt.hud;
 
+import AutoTaunt.config.ModConfig;
 import cc.polyfrost.oneconfig.hud.SingleTextHud;
-import org.polyfrost.example.config.TestConfig;
 
 /**
  * An example OneConfig HUD that is started in the config and displays text.
  *
- * @see TestConfig#hud
+ * @see ModConfig
  */
 public class TestHud extends SingleTextHud {
     public TestHud() {

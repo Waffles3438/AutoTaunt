@@ -1,11 +1,11 @@
-package org.polyfrost.example;
+package AutoTaunt;
 
+import AutoTaunt.command.AddTaunts;
+import AutoTaunt.config.ModConfig;
 import cc.polyfrost.oneconfig.events.event.InitializationEvent;
 import cc.polyfrost.oneconfig.utils.commands.CommandManager;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import org.polyfrost.example.command.ExampleCommand;
-import org.polyfrost.example.config.TestConfig;
 
 /**
  * The entrypoint of the Example Mod that initializes it.
@@ -13,20 +13,27 @@ import org.polyfrost.example.config.TestConfig;
  * @see Mod
  * @see InitializationEvent
  */
-@Mod(modid = ExampleMod.MODID, name = ExampleMod.NAME, version = ExampleMod.VERSION)
-public class ExampleMod {
+@Mod(modid = AutoTaunt.MODID, name = AutoTaunt.NAME, version = AutoTaunt.VERSION)
+public class AutoTaunt {
     public static final String MODID = "@ID@";
     public static final String NAME = "@NAME@";
     public static final String VERSION = "@VER@";
 
     @Mod.Instance(MODID)
-    public static ExampleMod INSTANCE; // Adds the instance of the mod, so we can access other variables.
-    public static TestConfig config;
+    public static AutoTaunt INSTANCE; // Adds the instance of the mod, so we can access other variables.
+    public static ModConfig config;
+
 
     // Register the config and commands.
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent event) {
-        config = new TestConfig();
-        CommandManager.INSTANCE.registerCommand(new ExampleCommand());
+        config = new ModConfig();
+        CommandManager.INSTANCE.registerCommand(new AddTaunts());
+        CommandManager.register(new AddTaunts());
     }
+
+//    @SubscribeEvent
+//    public void onClientTick(TickEvent.ClientTickEvent event){
+//
+//    }
 }

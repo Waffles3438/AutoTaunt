@@ -7,7 +7,7 @@
     "maxShiftBy": 5
   },
   "client": [
-    "MinecraftMixin"
+    "AutoTaunt.mixin.MinecraftMixin"
   ],
   "verbose": true
 }
