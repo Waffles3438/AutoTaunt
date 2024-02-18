@@ -23,7 +23,7 @@ import static AutoTaunt.config.ModConfig.taunts;
  * @see Main
  * @see AutoTaunt
  */
-@Command(value = "taunts", description = "Add taunts")
+@Command(value = "taunts", description = "Auto Taunt")
 public class AddTaunts {
 
     @Main
@@ -32,14 +32,18 @@ public class AddTaunts {
         Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("add - add a taunt"));
         Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("remove - remove a taunt"));
         Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("clear - removes all taunts"));
+        Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("defaultTaunts - adds default taunts"));
     }
 
     @SubCommand()
     private void add(@Greedy String s) {
+        if(taunts.contains(s)){
+            Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("This taunt is already registered"));
+            return;
+        }
         taunts.add(s);
         Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("Added: " + s));
         saveTaunts();
-
     }
 
     @SubCommand
@@ -51,7 +55,28 @@ public class AddTaunts {
             Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("Taunt not found"));
         }
         saveTaunts();
+    }
 
+//    @SubCommand
+//    private void remove(@Greedy int a){
+//        String temp = taunts.get(a-1);
+//        if (a <= taunts.size()) {
+//            taunts.remove(a-1);
+//            Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("Removed " + temp));
+//        } else {
+//            Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("Taunt not found"));
+//        }
+//        saveTaunts();
+//    }
+
+    @SubCommand()
+    private void list(){
+        Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("List of taunts: "));
+        int  i = 1;
+        for (String taunt : taunts) {
+            Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText(i + ". " + taunt));
+            i++;
+        }
     }
 
     @SubCommand
@@ -62,15 +87,7 @@ public class AddTaunts {
 
     }
 
-    @SubCommand()
-    private void list(){
-        Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("List of taunts: "));
-        for (String taunt : taunts) {
-            Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new ChatComponentText("- " + taunt));
-        }
-        saveTaunts();
 
-    }
 
     @SubCommand
     private void defaultTaunts(){
@@ -91,7 +108,6 @@ public class AddTaunts {
     }
 
     public void saveTaunts() {
-        System.out.println("Added to txt");
         try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("taunts.txt")))) {
             // Clear the file
             writer.print("");

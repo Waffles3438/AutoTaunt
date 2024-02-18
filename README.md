@@ -1,16 +1,11 @@
-# OneConfigExampleMod
+# Auto Taunt
 
-![Powered by OneConfig](https://polyfrost.org/media/branding/badges/badge_1.svg)
-![Compact Powered by OneConfig](https://polyfrost.org/media/branding/badges/badge_2.svg)
-![Minimal Powered by OneConfig](https://polyfrost.org/media/branding/badges/badge_3.svg)
-![Minimal Compact Powered by OneConfig](https://polyfrost.org/media/branding/badges/badge_4.svg)
+Ever wanted to spam your opponents with L's? Well, Auto taunt is just for you
 
-Example mod implementing OneConfig.
+## How to use?
 
-## How to use
+Customize keybind and chat mode in OneConfig and do /taunts and /taunts help for help
 
-- Copy the template either by using GitHub's "Use this template" feature or downloading the repo manually.
-- **Remove the license named "LICENSE-TEMPLATE" and choose a new one.**
-- Refactor the template (specifically, the modid, version and name in the gradle.properties and most of the class names)
-  to a different name.
-- Have fun modding! :D
+## Features
+
+Adding/removing custom words, custom keybind, no repition, chat modes
