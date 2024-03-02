@@ -8,4 +8,4 @@ Customize keybind and chat mode in OneConfig and do /taunts and /taunts help for
 
 ## Features
 
-Adding/removing custom words, custom keybind, no repetition, chat modes
+Adding/removing custom words, custom keybind, no repetition, chat modes, uses OneConfig
