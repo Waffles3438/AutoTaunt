@@ -1,6 +1,5 @@
 # Auto Taunt
-
-Ever wanted to spam your opponents with L's? Well, Auto taunt is just for you
+I hate Hypixel and Hypixel players, so I made this mod
 
 ## How to use?
 
