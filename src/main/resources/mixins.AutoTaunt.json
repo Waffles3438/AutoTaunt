@@ -1,13 +1,10 @@
 {
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.7",
-  "package": "org.polyfrost.example.mixin",
-  "refmap": "mixins.examplemod.refmap.json",
+  "package": "me.waffles.autotaunt.mixin",
+  "refmap": "mixins.autotaunt.refmap.json",
   "injectors": {
     "maxShiftBy": 5
   },
-  "client": [
-    "AutoTaunt.mixin.MinecraftMixin"
-  ],
   "verbose": true
 }
