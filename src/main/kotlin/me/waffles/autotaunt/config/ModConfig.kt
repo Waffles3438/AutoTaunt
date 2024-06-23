@@ -39,6 +39,8 @@ object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID
     @Exclude
     private var prev = ""
 
+    private var tempList = ArrayList<String>()
+
     init {
         initialize()
         registerKeyBind(keyBind) { test() }
@@ -75,11 +77,13 @@ object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID
         if (filteredEntries.isEmpty()) return null
         var random = rand.nextInt(filteredEntries.size)
         var text = filteredEntries[random].text
-        while (text == prev && filteredEntries.size != 1) {
+        while (text == prev && filteredEntries.size != 1 && tempList.contains(filteredEntries[random].text)) {
             random = rand.nextInt(filteredEntries.size)
             text = filteredEntries[random].text
         }
         prev = text
+        tempList.add(text)
+        if (tempList.size == filteredEntries.size) tempList.clear()
 
         return when (value) {
             0 -> ""
