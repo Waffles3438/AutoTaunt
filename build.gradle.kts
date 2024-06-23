@@ -12,7 +12,7 @@ plugins {
     id("org.polyfrost.defaults.java")
     id("org.polyfrost.defaults.loom")
     id("com.github.johnrengelman.shadow")
-    id("net.kyori.blossom") version "1.3.2"
+    id("net.kyori.blossom") version "1.3.1"
     id("signing")
     java
 }
@@ -22,6 +22,11 @@ val mod_name: String by project
 val mod_version: String by project
 val mod_id: String by project
 val mod_archives_name: String by project
+
+// Sets up the variables for when we preprocess to other Minecraft versions.
+preprocess {
+    vars.put("MODERN", if (project.platform.mcMinor >= 16) 1 else 0)
+}
 
 // Replaces the variables in `ExampleMod.java` to the ones specified in `gradle.properties`.
 blossom {
@@ -37,14 +42,15 @@ version = mod_version
 group = "org.polyfrost"
 
 // Sets the name of the output jar (the one you put in your mods folder and send to other people)
-// It outputs all versions of the mod into the `versions/{mcVersion}/build` directory.
+// It outputs all versions of the mod into the `build` directory.
 base {
     archivesName.set("$mod_archives_name-$platform")
 }
 
-// Configures Polyfrost Loom, our plugin fork to easily set up the programming environment.
+// Configures the Polyfrost Loom, our plugin fork to easily set up the programming environment.
 loom {
     // Removes the server configs from IntelliJ IDEA, leaving only client runs.
+    // If you're developing a server-side mod, you can remove this line.
     noServerRunConfigs()
 
     // Adds the tweak class if we are building legacy version of forge as per the documentation (https://docs.polyfrost.org)
@@ -52,17 +58,17 @@ loom {
         runConfigs {
             "client" {
                 programArgs("--tweakClass", "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
-                property("mixin.debug.export", "true") // Outputs all mixin changes to `versions/{mcVersion}/run/.mixin.out/class`
+                property("mixin.debug.export", "true")
             }
         }
     }
-    // Configures the mixins if we are building for forge
+    // Configures the mixins if we are building for forge, useful for when we are dealing with cross-platform projects.
     if (project.platform.isForge) {
         forge {
             mixinConfig("mixins.${mod_id}.json")
         }
     }
-    // Configures the name of the mixin "refmap"
+    // Configures the name of the mixin "refmap" using an experimental loom api.
     mixin.defaultRefmapName.set("mixins.${mod_id}.refmap.json")
 }
 
@@ -76,7 +82,10 @@ val modShade: Configuration by configurations.creating {
 
 // Configures the output directory for when building from the `src/resources` directory.
 sourceSets {
+    val dummy by creating
     main {
+        dummy.compileClasspath += compileClasspath
+        compileClasspath += dummy.output
         output.setResourcesDir(java.classesDirectory)
     }
 }
@@ -91,10 +100,9 @@ dependencies {
     // Adds the OneConfig library, so we can develop with it.
     modCompileOnly("cc.polyfrost:oneconfig-$platform:0.2.2-alpha+")
 
-    // Adds DevAuth, which we can use to log in to Minecraft in development.
     modRuntimeOnly("me.djtheredstoner:DevAuth-${if (platform.isFabric) "fabric" else if (platform.isLegacyForge) "forge-legacy" else "forge-latest"}:1.2.0")
 
-    // If we are building for legacy forge, includes the launch wrapper with `shade` as we configured earlier, as well as mixin 0.7.11
+    // If we are building for legacy forge, includes the launch wrapper with `shade` as we configured earlier.
     if (platform.isLegacyForge) {
         compileOnly("org.spongepowered:mixin:0.7.11-SNAPSHOT")
         shade("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+")
@@ -102,7 +110,7 @@ dependencies {
 }
 
 tasks {
-    // Processes the `src/resources/mcmod.info`, `fabric.mod.json`, or `mixins.${mod_id}.json` and replaces
+    // Processes the `src/resources/mcmod.info or fabric.mod.json` and replaces
     // the mod id, name and version with the ones in `gradle.properties`
     processResources {
         inputs.property("id", mod_id)
@@ -164,7 +172,7 @@ tasks {
     // Configures our shadow/shade configuration, so we can
     // include some dependencies within our mod jar file.
     named<ShadowJar>("shadowJar") {
-        archiveClassifier.set("dev")
+        archiveClassifier.set("dev") // TODO: machete gets confused by the `dev` prefix.
         configurations = listOf(shade, modShade)
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
@@ -178,7 +186,7 @@ tasks {
         // Sets the jar manifest attributes.
         if (platform.isLegacyForge) {
             manifest.attributes += mapOf(
-                "ModSide" to "CLIENT", // We aren't developing a server-side mod
+                "ModSide" to "CLIENT", // We aren't developing a server-side mod, so this is fine.
                 "ForceLoadAsMod" to true, // We want to load this jar as a mod, so we force Forge to do so.
                 "TweakOrder" to "0", // Makes sure that the OneConfig launch wrapper is loaded as soon as possible.
                 "MixinConfigs" to "mixins.${mod_id}.json", // We want to use our mixin configuration, so we specify it here.
