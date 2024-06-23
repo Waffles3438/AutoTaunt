@@ -14,20 +14,22 @@ import cc.polyfrost.oneconfig.config.elements.BasicOption
 import cc.polyfrost.oneconfig.config.elements.OptionPage
 import cc.polyfrost.oneconfig.libs.universal.UChat
 import cc.polyfrost.oneconfig.libs.universal.UKeyboard
+import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
+import cc.polyfrost.oneconfig.utils.hypixel.LocrawUtil
 import me.waffles.autotaunt.AutoTaunt
 import me.waffles.autotaunt.element.MacroListOption
 import me.waffles.autotaunt.element.WrappedMacro
 import java.lang.reflect.Field
 import java.util.*
 import java.util.stream.Collectors
-import kotlin.collections.ArrayList
+
 
 object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID + ".json") {
 
     @KeyBind(name = "AutoTaunt keybind", size = OptionSize.DUAL)
     var keyBind = OneKeyBind(UKeyboard.KEY_L)
 
-    @Dropdown(name = "Chat type", options = ["Default", "All chat", "Party chat", "Shout"], size = OptionSize.DUAL)
+    @Dropdown(name = "Chat type", options = ["Default", "All chat", "Party chat", "Shout", "Smart"], size = OptionSize.DUAL)
     var value = 0
 
     @CustomOption
@@ -37,8 +39,6 @@ object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID
     private val rand = Random()
 
     @Exclude
-    private var prev = ""
-
     private var tempList = ArrayList<String>()
 
     init {
@@ -75,22 +75,53 @@ object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID
     private fun taunt(): String? {
         val filteredEntries = entries.stream().filter { it.enabled }.collect(Collectors.toList())
         if (filteredEntries.isEmpty()) return null
-        var random = rand.nextInt(filteredEntries.size)
-        var text = filteredEntries[random].text
-        while (text == prev && filteredEntries.size != 1 && tempList.contains(filteredEntries[random].text)) {
-            random = rand.nextInt(filteredEntries.size)
-            text = filteredEntries[random].text
-        }
-        prev = text
-        tempList.add(text)
-        if (tempList.size == filteredEntries.size) tempList.clear()
+        var text: String
+        do {
+            text = filteredEntries[rand.nextInt(filteredEntries.size)].text
+        } while (tempList.contains(text) && filteredEntries.size > 1)
 
-        return when (value) {
-            0 -> ""
-            1 -> "/ac "
-            2 -> "/pc "
-            else -> "/shout "
-        } + text
+        tempList.add(text)
+9
+        if (tempList.size == filteredEntries.size) {
+            tempList.clear()
+        }
+
+        val locraw = LocrawUtil.INSTANCE.locrawInfo
+        if(value == 4 && HypixelUtils.INSTANCE.isHypixel()) {
+            if(locraw == null){
+                return "/ac " + text
+            } else if(
+                locraw.getGameMode().contains("BEDWARS_EIGHT_TWO") ||
+                locraw.getGameMode().contains("BEDWARS_FOUR_THREE") ||
+                locraw.getGameMode().contains("BEDWARS_FOUR_FOUR") ||
+                locraw.getGameMode().contains("BEDWARS_CASTLE") ||
+                locraw.getGameMode().contains("BEDWARS_FOUR_FOUR") ||
+                locraw.getGameMode().contains("BEDWARS_TWO_FOUR") ||
+                locraw.getGameMode().contains("DUELS_UHC_FOUR") ||
+                locraw.getGameMode().contains("DUELS_SW_DOUBLES") ||
+                locraw.getGameMode().contains("DUELS_UHC_DOUBLES") ||
+                locraw.getGameMode().contains("DUELS_OP_DOUBLES") ||
+                locraw.getGameMode().contains("DUELS_MW_DOUBLES") ||
+                locraw.getGameMode().contains("DUELS_BRIDGE_DOUBLES") ||
+                locraw.getGameMode().contains("DUELS_BRIDGE_THREES") ||
+                locraw.getGameMode().contains("DUELS_BRIDGE_FOUR") ||
+                locraw.getGameMode().contains("DUELS_BRIDGE_2V2V2V2") ||
+                locraw.getGameMode().contains("DUELS_BRIDGE_3V3V3V3") ||
+                locraw.getGameMode().contains("DUELS_CAPTURE_THREES")){
+                return "/shout " + text
+            } else {
+                return "/ac " + text
+            }
+        } else if(value == 4 && !HypixelUtils.INSTANCE.isHypixel()) {
+            return text
+        } else {
+            return when (value) {
+                0 -> ""
+                1 -> "/ac "
+                2 -> "/pc "
+                else -> "/shout "
+            } + text
+        }
     }
 
     private fun test() {
