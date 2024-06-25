@@ -46,6 +46,7 @@ object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID
     @Exclude
     private val games = listOf(
         "BEDWARS_FOUR_FOUR",
+        "BEDWARS_EIGHT_TWO",
         "BEDWARS_FOUR_THREE",
         "BEDWARS_FOUR_FOUR",
         "BEDWARS_CASTLE",
