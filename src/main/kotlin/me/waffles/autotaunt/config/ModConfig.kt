@@ -14,7 +14,9 @@ import cc.polyfrost.oneconfig.config.elements.BasicOption
 import cc.polyfrost.oneconfig.config.elements.OptionPage
 import cc.polyfrost.oneconfig.libs.universal.UChat
 import cc.polyfrost.oneconfig.libs.universal.UKeyboard
+import cc.polyfrost.oneconfig.utils.dsl.mc
 import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
+import cc.polyfrost.oneconfig.utils.hypixel.LocrawInfo
 import cc.polyfrost.oneconfig.utils.hypixel.LocrawUtil
 import me.waffles.autotaunt.AutoTaunt
 import me.waffles.autotaunt.element.MacroListOption
@@ -40,6 +42,27 @@ object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID
 
     @Exclude
     private var tempList = ArrayList<String>()
+
+    @Exclude
+    private val games = listOf(
+        "BEDWARS_FOUR_FOUR",
+        "BEDWARS_FOUR_THREE",
+        "BEDWARS_FOUR_FOUR",
+        "BEDWARS_CASTLE",
+        "BEDWARS_FOUR_FOUR",
+        "BEDWARS_TWO_FOUR",
+        "DUELS_UHC_FOUR",
+        "DUELS_SW_DOUBLES",
+        "DUELS_UHC_DOUBLES",
+        "DUELS_OP_DOUBLES",
+        "DUELS_MW_DOUBLES",
+        "DUELS_BRIDGE_DOUBLES",
+        "DUELS_BRIDGE_THREES",
+        "DUELS_BRIDGE_FOUR",
+        "DUELS_BRIDGE_2V2V2V2",
+        "DUELS_BRIDGE_3V3V3V3",
+        "DUELS_CAPTURE_THREES"
+    )
 
     init {
         initialize()
@@ -81,38 +104,21 @@ object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID
         } while (tempList.contains(text) && filteredEntries.size > 1)
 
         tempList.add(text)
-9
+
         if (tempList.size == filteredEntries.size) {
             tempList.clear()
         }
 
         val locraw = LocrawUtil.INSTANCE.locrawInfo
-        if(value == 4 && HypixelUtils.INSTANCE.isHypixel()) {
-            if(locraw == null){
-                return "/ac " + text
-            } else if(
-                locraw.getGameMode().contains("BEDWARS_EIGHT_TWO") ||
-                locraw.getGameMode().contains("BEDWARS_FOUR_THREE") ||
-                locraw.getGameMode().contains("BEDWARS_FOUR_FOUR") ||
-                locraw.getGameMode().contains("BEDWARS_CASTLE") ||
-                locraw.getGameMode().contains("BEDWARS_FOUR_FOUR") ||
-                locraw.getGameMode().contains("BEDWARS_TWO_FOUR") ||
-                locraw.getGameMode().contains("DUELS_UHC_FOUR") ||
-                locraw.getGameMode().contains("DUELS_SW_DOUBLES") ||
-                locraw.getGameMode().contains("DUELS_UHC_DOUBLES") ||
-                locraw.getGameMode().contains("DUELS_OP_DOUBLES") ||
-                locraw.getGameMode().contains("DUELS_MW_DOUBLES") ||
-                locraw.getGameMode().contains("DUELS_BRIDGE_DOUBLES") ||
-                locraw.getGameMode().contains("DUELS_BRIDGE_THREES") ||
-                locraw.getGameMode().contains("DUELS_BRIDGE_FOUR") ||
-                locraw.getGameMode().contains("DUELS_BRIDGE_2V2V2V2") ||
-                locraw.getGameMode().contains("DUELS_BRIDGE_3V3V3V3") ||
-                locraw.getGameMode().contains("DUELS_CAPTURE_THREES")){
-                return "/shout " + text
+        if (value == 4 && HypixelUtils.INSTANCE.isHypixel()) {
+            return if (locraw == null || mc.thePlayer.capabilities.allowFlying || !AutoTaunt.ingame) {
+                "/ac $text"
+            } else if (isTeamGame(locraw)) {
+                "/shout $text"
             } else {
-                return "/ac " + text
+                "/ac $text"
             }
-        } else if(value == 4 && !HypixelUtils.INSTANCE.isHypixel()) {
+        } else if (value == 4 && !HypixelUtils.INSTANCE.isHypixel()) {
             return text
         } else {
             return when (value) {
@@ -122,6 +128,13 @@ object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID
                 else -> "/shout "
             } + text
         }
+    }
+
+    private fun isTeamGame(info: LocrawInfo): Boolean {
+        for (game in games) {
+            if (info.gameMode.contains(game)) return true
+        }
+        return false
     }
 
     private fun test() {
