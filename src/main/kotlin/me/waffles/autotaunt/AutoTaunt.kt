@@ -48,7 +48,7 @@ object AutoTaunt {
             ingame = false
         }
         if (message.contains(": ")) return
-        if (message.contains("The game starts in 1 second!") || message.contains("You have respawned!")) {
+        if (message.contains("The game starts in 1 second!") || (message.contains("You have respawned!") && ingame)) {
             ingame = true
         }
     }
