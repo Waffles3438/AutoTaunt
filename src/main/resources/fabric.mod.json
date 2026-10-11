@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "autotaunt",
+  "version": "${version}",
+  "name": "AutoTaunt",
+  "description": "Custom chat taunts with OneConfig settings and Hypixel chat modes.",
+  "authors": ["Waffles"],
+  "environment": "client",
+  "entrypoints": {
+    "client": [{"adapter": "kotlin", "value": "me.waffles.autotaunt.AutoTaunt"}]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "1.8.9",
+    "java": ">=25",
+    "fabric-language-kotlin": ">=1.14.1+kotlin.2.4.20",
+    "oneconfig": ">=1.4.0",
+    "oneconfigv1": ">=1.4.0",
+    "pylon": ">=0.1.7"
+  }
+}

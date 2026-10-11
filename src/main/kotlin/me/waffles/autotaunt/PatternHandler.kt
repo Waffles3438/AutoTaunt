@@ -1,38 +1,40 @@
 package me.waffles.autotaunt
 
-import cc.polyfrost.oneconfig.utils.JsonUtils
-import cc.polyfrost.oneconfig.utils.NetworkUtils
-import cc.polyfrost.oneconfig.utils.dsl.runAsync
-import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import org.apache.logging.log4j.LogManager
+import java.net.HttpURLConnection
+import java.net.URI
 import java.util.regex.Pattern
+import kotlin.concurrent.thread
 
 object PatternHandler {
-    var gameEnd = ArrayList<Pattern>()
+    private val logger = LogManager.getLogger("AutoTaunt")
+    private val fallback = listOf(
+        "^\\s*VICTORY!\\s*$", "^\\s*DEFEAT!\\s*$", "^\\s*GAME OVER!\\s*$",
+        ".*WINNER!.*", ".*Winner:.*", ".*Winners:.*"
+    ).map(Pattern::compile)
 
-    val regex = NetworkUtils.getJsonElement("https://data.woverflow.cc/regex.json").getAsJsonObject();
+    @Volatile
+    var gameEnd: List<Pattern> = fallback
+        private set
 
     fun initialize() {
-        runAsync {
+        thread(name = "AutoTaunt-patterns", isDaemon = true) {
+            var connection: HttpURLConnection? = null
             try {
-                regex
-                if (regex != null) {
-                    processJson(regex)
-                    return@runAsync
+                connection = URI("https://data.woverflow.cc/regex.json").toURL().openConnection() as HttpURLConnection
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                val patterns = connection.inputStream.bufferedReader().use { reader ->
+                    JsonParser().parse(reader).asJsonObject.getAsJsonArray("game_end")
+                        .map { Pattern.compile(it.asString) }
                 }
-                val gotten = NetworkUtils.getString("https://data.woverflow.cc/regex.json")
-                if (gotten != null) {
-                    processJson(JsonUtils.parseString(gotten).asJsonObject)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+                if (patterns.isNotEmpty()) gameEnd = patterns
+            } catch (exception: Exception) {
+                logger.warn("Could not refresh game-end patterns; using bundled defaults", exception)
+            } finally {
+                connection?.disconnect()
             }
         }
     }
-
-    private fun processJson(jsonObject: JsonObject) {
-        for (element in jsonObject.getAsJsonArray("game_end")) {
-            gameEnd.add(Pattern.compile(element.asString))
-        }
-    }
-
 }

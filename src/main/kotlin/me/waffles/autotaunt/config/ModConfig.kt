@@ -1,145 +1,55 @@
 package me.waffles.autotaunt.config
 
-import cc.polyfrost.oneconfig.config.Config
-import cc.polyfrost.oneconfig.config.annotations.CustomOption
-import cc.polyfrost.oneconfig.config.annotations.Dropdown
-import cc.polyfrost.oneconfig.config.annotations.Exclude
-import cc.polyfrost.oneconfig.config.annotations.KeyBind
-import cc.polyfrost.oneconfig.config.core.ConfigUtils
-import cc.polyfrost.oneconfig.config.core.OneKeyBind
-import cc.polyfrost.oneconfig.config.data.Mod
-import cc.polyfrost.oneconfig.config.data.ModType
-import cc.polyfrost.oneconfig.config.data.OptionSize
-import cc.polyfrost.oneconfig.config.elements.BasicOption
-import cc.polyfrost.oneconfig.config.elements.OptionPage
-import cc.polyfrost.oneconfig.libs.universal.UChat
-import cc.polyfrost.oneconfig.libs.universal.UKeyboard
-import cc.polyfrost.oneconfig.utils.dsl.mc
-import cc.polyfrost.oneconfig.utils.hypixel.HypixelUtils
-import cc.polyfrost.oneconfig.utils.hypixel.LocrawInfo
-import cc.polyfrost.oneconfig.utils.hypixel.LocrawUtil
 import me.waffles.autotaunt.AutoTaunt
-import me.waffles.autotaunt.element.MacroListOption
-import me.waffles.autotaunt.element.WrappedMacro
-import java.lang.reflect.Field
-import java.util.*
-import java.util.stream.Collectors
+import me.waffles.autotaunt.element.TauntsOption
+import net.minecraft.client.Minecraft
+import org.polyfrost.oneconfig.api.config.v1.Config
+import org.polyfrost.oneconfig.api.config.v1.Tree
+import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
+import org.polyfrost.oneconfig.api.config.v1.annotations.Include
+import org.polyfrost.oneconfig.api.config.v1.annotations.Keybind
+import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils
+import org.polyfrost.oneconfig.api.platform.v1.Platform
+import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
 
+object ModConfig : Config("autotaunt.json", AutoTaunt.NAME, Category.QOL) {
+    @Keybind(title = "AutoTaunt keybind")
+    var keyBind = KeybindHelper.builder().key(Platform.compatibility().keys().keyL)
+        .action(Runnable { sendTaunt() }).build()
 
-object ModConfig : Config(Mod(AutoTaunt.NAME, ModType.UTIL_QOL), AutoTaunt.MODID + ".json") {
-
-    @KeyBind(name = "AutoTaunt keybind", size = OptionSize.DUAL)
-    var keyBind = OneKeyBind(UKeyboard.KEY_L)
-
-    @Dropdown(name = "Chat type", options = ["Default", "All chat", "Party chat", "Shout", "Smart"], size = OptionSize.DUAL)
+    @Dropdown(title = "Chat type", options = ["Default", "All chat", "Party chat", "Shout", "Smart"])
     var value = 0
 
-    @CustomOption
-    var entries: ArrayList<Macro> = ArrayList()
+    @TauntsOption
+    var entries: Array<String> = emptyArray()
 
-    @Exclude
-    private val rand = Random()
+    val macros: List<Macro>
+        get() = MacroCodec.decode(entries)
 
-    @Exclude
-    private var tempList = ArrayList<String>()
+    @Include
+    var legacyMigrationChecked = false
 
-    @Exclude
-    private val games = listOf(
-        "BEDWARS_FOUR_FOUR",
-        "BEDWARS_EIGHT_TWO",
-        "BEDWARS_FOUR_THREE",
-        "BEDWARS_FOUR_FOUR",
-        "BEDWARS_CASTLE",
-        "BEDWARS_FOUR_FOUR",
-        "BEDWARS_TWO_FOUR",
-        "DUELS_UHC_FOUR",
-        "DUELS_SW_DOUBLES",
-        "DUELS_UHC_DOUBLES",
-        "DUELS_OP_DOUBLES",
-        "DUELS_MW_DOUBLES",
-        "DUELS_BRIDGE_DOUBLES",
-        "DUELS_BRIDGE_THREES",
-        "DUELS_BRIDGE_FOUR",
-        "DUELS_BRIDGE_2V2V2V2",
-        "DUELS_BRIDGE_3V3V3V3",
-        "DUELS_CAPTURE_THREES"
-    )
+    private val selector = TauntSelector()
 
-    init {
-        initialize()
-        registerKeyBind(keyBind) { test() }
-    }
-
-    override fun getCustomOption(
-        field: Field,
-        annotation: CustomOption,
-        page: OptionPage,
-        mod: Mod,
-        migrate: Boolean
-    ): BasicOption {
-        val option = MacroListOption
-        ConfigUtils.getSubCategory(page, "General", "").options.add(option)
-        return option
-    }
-
-    override fun load() {
-        super.load()
-        MacroListOption.wrappedMacros = entries.mapTo(mutableListOf()) { macro ->
-            WrappedMacro(macro)
+    override fun onInitialized(tree: Tree) {
+        super.onInitialized(tree)
+        if (!legacyMigrationChecked) {
+            LegacyConfigMigration.import(this)
+            legacyMigrationChecked = true
+            save()
         }
     }
 
-    override fun save() {
-        entries = ArrayList(MacroListOption.wrappedMacros.map { wrapped ->
-            wrapped.macro
-        }.toList())
-        super.save()
+    fun updateEntries(macros: List<Macro>) {
+        getProperty("entries").setAs(MacroCodec.encode(macros))
+        save()
     }
 
-    private fun taunt(): String? {
-        val filteredEntries = entries.stream().filter { it.enabled }.collect(Collectors.toList())
-        if (filteredEntries.isEmpty()) return null
-        var text: String
-        do {
-            text = filteredEntries[rand.nextInt(filteredEntries.size)].text
-        } while (tempList.contains(text) && filteredEntries.size > 1)
-
-        tempList.add(text)
-
-        if (tempList.size == filteredEntries.size) {
-            tempList.clear()
-        }
-
-        val locraw = LocrawUtil.INSTANCE.locrawInfo
-        if (value == 4 && HypixelUtils.INSTANCE.isHypixel()) {
-            return if (locraw == null || mc.thePlayer.capabilities.allowFlying || !AutoTaunt.ingame) {
-                "/ac $text"
-            } else if (isTeamGame(locraw)) {
-                "/shout $text"
-            } else {
-                "/ac $text"
-            }
-        } else if (value == 4 && !HypixelUtils.INSTANCE.isHypixel()) {
-            return text
-        } else {
-            return when (value) {
-                0 -> ""
-                1 -> "/ac "
-                2 -> "/pc "
-                else -> "/shout "
-            } + text
-        }
+    fun sendTaunt() {
+        val player = Minecraft.getInstance().player ?: return
+        val text = selector.next(macros) ?: return
+        val hypixel = HypixelUtils.isHypixel()
+        val mode = if (hypixel) HypixelUtils.getLocation().mode.orElse(null) else null
+        player.sendChat(ChatRouter.route(text, value, hypixel, mode, player.abilities.canFly, AutoTaunt.ingame))
     }
-
-    private fun isTeamGame(info: LocrawInfo): Boolean {
-        for (game in games) {
-            if (info.gameMode.contains(game)) return true
-        }
-        return false
-    }
-
-    private fun test() {
-        taunt()?.let { UChat.say(it) }
-    }
-
 }
