@@ -2,6 +2,7 @@ package me.waffles.autotaunt.config
 
 import me.waffles.autotaunt.AutoTaunt
 import me.waffles.autotaunt.element.TauntsOption
+import net.kyori.adventure.text.Component
 import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.Tree
@@ -33,6 +34,12 @@ object ModConfig : Config("autotaunt.json", AutoTaunt.NAME, Category.QOL) {
 
     override fun onInitialized(tree: Tree) {
         super.onInitialized(tree)
+        // OneConfig ignores "" metadata and rejects replacing an existing title. Whitespace
+        // clears the old title so empty rich text can hide the label without an ID fallback.
+        getProperty("entries").apply {
+            addMetadata("title", " ")
+            title = Component.empty()
+        }
         if (!legacyMigrationChecked) {
             LegacyConfigMigration.import(this)
             legacyMigrationChecked = true

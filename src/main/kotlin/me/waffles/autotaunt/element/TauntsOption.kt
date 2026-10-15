@@ -7,7 +7,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Option
 @Option(display = MacroListOption::class)
 annotation class TauntsOption(
     val title: String = "Taunts",
-    val description: String = "Edit, enable or remove your messages.",
+    val description: String = "",
     val category: String = "General",
-    val subcategory: String = "Taunts"
+    val subcategory: String = "General"
 )
