@@ -1,8 +1,8 @@
 package me.waffles.autotaunt.config
 
 import me.waffles.autotaunt.AutoTaunt
+import me.waffles.autotaunt.element.FullWidthTextList
 import me.waffles.autotaunt.element.TauntList
-import net.kyori.adventure.text.Component
 import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.Tree
@@ -42,9 +42,8 @@ object ModConfig : Config("autotaunt.json", AutoTaunt.NAME, Category.QOL) {
 
     override fun onInitialized(tree: Tree) {
         super.onInitialized(tree)
-        // The list fills the whole row, so an empty title keeps OneConfig from squeezing a label beside it
-        // (a missing title would fall back to the property ID).
-        getProperty("taunts").title = Component.empty()
+        // An instance (not the annotation's class token) so the settings row can see it is full width.
+        getProperty("taunts").addMetadata("visualizer", FullWidthTextList())
         var migrated = false
         if (!legacyMigrationChecked) {
             LegacyConfigMigration.import(this)

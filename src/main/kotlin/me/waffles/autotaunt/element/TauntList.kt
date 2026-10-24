@@ -7,6 +7,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Option
 @Retention(AnnotationRetention.RUNTIME)
 @Option(display = FullWidthTextList::class)
 annotation class TauntList(
+    val title: String = "Taunts",
     val category: String = "General",
     val subcategory: String = "General",
     val placeholder: String = "Enter a taunt",
