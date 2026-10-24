@@ -1,13 +1,14 @@
 package me.waffles.autotaunt.config
 
 import me.waffles.autotaunt.AutoTaunt
+import me.waffles.autotaunt.element.TauntList
+import net.kyori.adventure.text.Component
 import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.Tree
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Include
 import org.polyfrost.oneconfig.api.config.v1.annotations.Keybind
-import org.polyfrost.oneconfig.api.config.v1.annotations.TextList
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils
 import org.polyfrost.oneconfig.api.platform.v1.Platform
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
@@ -24,18 +25,11 @@ object ModConfig : Config("autotaunt.json", AutoTaunt.NAME, Category.QOL) {
     @Include
     var entries: Array<String> = emptyArray()
 
-    @TextList(
-        title = "Enabled taunts",
-        description = "Messages used by the send key. Use /taunts toggle <number> to disable a message.",
-        subcategory = "Taunts", placeholder = "Enter a taunt", addText = "Add taunt"
-    )
+    @TauntList(subcategory = "Taunts")
     var taunts: Array<String> = emptyArray()
 
-    @TextList(
-        title = "Disabled taunts",
-        description = "Saved messages that are not sent. Use /taunts toggle <number> to enable a message.",
-        subcategory = "Taunts", placeholder = "Enter a taunt", addText = "Add disabled taunt"
-    )
+    // Taunts switched off with /taunts toggle. Stored but not shown in the settings page.
+    @Include
     var disabledTaunts: Array<String> = emptyArray()
 
     val macros: List<Macro>
@@ -48,6 +42,9 @@ object ModConfig : Config("autotaunt.json", AutoTaunt.NAME, Category.QOL) {
 
     override fun onInitialized(tree: Tree) {
         super.onInitialized(tree)
+        // The list fills the whole row, so an empty title keeps OneConfig from squeezing a label beside it
+        // (a missing title would fall back to the property ID).
+        getProperty("taunts").title = Component.empty()
         var migrated = false
         if (!legacyMigrationChecked) {
             LegacyConfigMigration.import(this)

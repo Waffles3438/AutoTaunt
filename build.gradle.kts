@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.4.20"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.20"
     id("net.fabricmc.fabric-loom-remap") version "1.18.4"
     id("ploceus") version "1.18.1"
 }

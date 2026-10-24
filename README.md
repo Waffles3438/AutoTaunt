@@ -15,7 +15,7 @@ This port replaces the Forge build. It requires the Gen2 Ornithe mappings/runtim
 
 ## Use
 
-Open AutoTaunt in OneConfig or run `/taunts`. The default send key is **L**. The settings page lets you change the key and choose Default / All / Party / Shout / Smart chat. OneConfig's built-in text lists let you add, edit, remove and drag to reorder enabled and disabled taunts. Use `/taunts toggle <number>` to move a message between the lists, or cut and paste it between them in the settings page.
+Open AutoTaunt in OneConfig or run `/taunts`. The default send key is **L**. The settings page lets you change the key and choose Default / All / Party / Shout / Smart chat. The taunt list spans the full width of the page and lets you add, edit, remove and drag to reorder messages. `/taunts toggle <number>` switches a message off without deleting it. Switched-off messages are hidden from the settings page and show as `[off]` in `/taunts list`.
 
 - `/taunts help` lists commands.
 - `/taunts add <text>` adds a message, including spaces.
@@ -27,7 +27,7 @@ Open AutoTaunt in OneConfig or run `/taunts`. The default send key is **L**. The
 
 Each distinct enabled, non-empty message is used once per random cycle. Smart chat uses `/shout` during supported Hypixel team games and `/ac` in solo games, lobbies and while spectating. Outside Hypixel it sends ordinary chat.
 
-On first launch, the port imports taunts, chat type and supported keybinds from `OneConfig/config/autotaunt.json` (also checking `config/OneConfig/config/autotaunt.json`). The original file is preserved. Settings from the earlier custom OneConfig v1 editor also migrate automatically into the enabled and disabled lists. OneConfig v1 manages the new settings and profiles. Unsupported legacy keybinds can be rebound in the settings page.
+On first launch, the port imports taunts, chat type and supported keybinds from `OneConfig/config/autotaunt.json` (also checking `config/OneConfig/config/autotaunt.json`). The original file is preserved. Settings from the earlier custom OneConfig v1 editor also migrate automatically. OneConfig v1 manages the new settings and profiles. Unsupported legacy keybinds can be rebound in the settings page.
 
 ## Build
 
